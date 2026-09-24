@@ -1,0 +1,15 @@
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+*.db
+*.db-*
+*.db.bak-*
+journal/*.db
+journal/*.db-*
+journal/*.db.bak-*
+*.LOCKED-SSOT
+journal/*.LOCKED-SSOT
+journal/pending.json
+harness/KILL
+.DS_Store

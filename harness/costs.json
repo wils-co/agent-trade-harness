@@ -1,0 +1,9 @@
+{
+  "taker_fee_bps": 4.5,
+  "maker_fee_bps": 1.5,
+  "enter_as": "taker",
+  "exit_as": "taker",
+  "slippage_bps": 1.0,
+  "funding_bps_per_hour": 1.0,
+  "fee_source": "placeholder — verify vs real fills via hyperliquid_client.py review <address>"
+}
