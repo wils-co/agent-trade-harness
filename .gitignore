@@ -12,4 +12,5 @@ journal/*.db.bak-*
 journal/*.LOCKED-SSOT
 journal/pending.json
 harness/KILL
+HANDOVER*.md
 .DS_Store
