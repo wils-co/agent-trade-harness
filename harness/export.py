@@ -11,6 +11,7 @@ Run via:
 """
 from __future__ import annotations
 
+import html
 import math
 import re
 import sqlite3
@@ -240,7 +241,21 @@ def compute_metrics(trades: list[dict]) -> dict:
     }
 
 
-def generate_svg(metrics: dict, output_path: Path = SVG_PATH) -> None:
+SVG_THEMES = {
+    # GitHub README: dark card that reads in both GitHub themes.
+    "dark": {"bg": "#0d1117", "border": "#30363d", "grid": "#21262d", "axis": "#484f58",
+             "muted": "#8b949e", "text": "#f0f6fc", "line": "#38bdf8", "hwm": "#64748b",
+             "dd": "#f43f5e", "glow": "0.4", "font": "-apple-system, sans-serif"},
+    # wilsco.au: paper/ink/gold. Drawdown is grey, not red, so it never relies on red-green.
+    "light": {"bg": "#f7f4ee", "border": "#dcd8d0", "grid": "#e7e3db", "axis": "#b9b4aa",
+              "muted": "#8a857b", "text": "#201d18", "line": "#b97f34", "hwm": "#8a857b",
+              "dd": "#6b665d", "glow": "0.15", "font": "'IBM Plex Mono', ui-monospace, monospace"},
+}
+
+
+def generate_svg(metrics: dict, output_path: Path = SVG_PATH, theme: str = "dark") -> None:
+    c = SVG_THEMES[theme]
+    font = c["font"]
     eq = metrics.get("equity_curve", [])
     if not eq:
         return
@@ -289,18 +304,18 @@ def generate_svg(metrics: dict, output_path: Path = SVG_PATH) -> None:
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" width="100%" height="100%">',
         '  <defs>',
         '    <linearGradient id="eqGrad" x1="0" y1="0" x2="0" y2="1">',
-        '      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.35"/>',
-        '      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.0"/>',
+        f'      <stop offset="0%" stop-color="{c["line"]}" stop-opacity="0.35"/>',
+        f'      <stop offset="100%" stop-color="{c["line"]}" stop-opacity="0.0"/>',
         '    </linearGradient>',
         '    <linearGradient id="ddGrad" x1="0" y1="0" x2="0" y2="1">',
-        '      <stop offset="0%" stop-color="#f43f5e" stop-opacity="0.05"/>',
-        '      <stop offset="100%" stop-color="#f43f5e" stop-opacity="0.35"/>',
+        f'      <stop offset="0%" stop-color="{c["dd"]}" stop-opacity="0.05"/>',
+        f'      <stop offset="100%" stop-color="{c["dd"]}" stop-opacity="0.35"/>',
         '    </linearGradient>',
         '    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">',
-        '      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#38bdf8" flood-opacity="0.4"/>',
+        f'      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="{c["line"]}" flood-opacity="{c["glow"]}"/>',
         '    </filter>',
         '  </defs>',
-        f'  <rect width="{width}" height="{height}" rx="10" fill="#0d1117" stroke="#30363d" stroke-width="1.5"/>',
+        f'  <rect width="{width}" height="{height}" rx="10" fill="{c["bg"]}" stroke="{c["border"]}" stroke-width="1.5"/>',
     ]
 
     # Grid lines - Upper Panel
@@ -308,27 +323,27 @@ def generate_svg(metrics: dict, output_path: Path = SVG_PATH) -> None:
     for i in range(n_ticks_upper + 1):
         tick_r = min_r + (r_range / n_ticks_upper) * i
         y_pos = y_upper(tick_r)
-        svg.append(f'  <line x1="{margin_l}" y1="{y_pos:.1f}" x2="{width - margin_r}" y2="{y_pos:.1f}" stroke="#21262d" stroke-dasharray="3,3"/>')
-        svg.append(f'  <text x="{margin_l - 10}" y="{y_pos + 4:.1f}" font-family="-apple-system, sans-serif" font-size="11" fill="#8b949e" text-anchor="end">{tick_r:+.1f}R</text>')
+        svg.append(f'  <line x1="{margin_l}" y1="{y_pos:.1f}" x2="{width - margin_r}" y2="{y_pos:.1f}" stroke="{c["grid"]}" stroke-dasharray="3,3"/>')
+        svg.append(f'  <text x="{margin_l - 10}" y="{y_pos + 4:.1f}" font-family="{font}" font-size="11" fill="{c["muted"]}" text-anchor="end">{tick_r:+.1f}R</text>')
 
     # Zero Line Upper
     if min_r <= 0 <= max_r:
         y_zero = y_upper(0.0)
-        svg.append(f'  <line x1="{margin_l}" y1="{y_zero:.1f}" x2="{width - margin_r}" y2="{y_zero:.1f}" stroke="#484f58" stroke-width="1.2"/>')
+        svg.append(f'  <line x1="{margin_l}" y1="{y_zero:.1f}" x2="{width - margin_r}" y2="{y_zero:.1f}" stroke="{c["axis"]}" stroke-width="1.2"/>')
 
     # Grid lines - Lower Panel
     y_dd_zero = lower_y
-    svg.append(f'  <line x1="{margin_l}" y1="{y_dd_zero:.1f}" x2="{width - margin_r}" y2="{y_dd_zero:.1f}" stroke="#484f58" stroke-width="1.2"/>')
-    svg.append(f'  <text x="{margin_l - 10}" y="{y_dd_zero + 4:.1f}" font-family="-apple-system, sans-serif" font-size="11" fill="#8b949e" text-anchor="end">0.0R</text>')
+    svg.append(f'  <line x1="{margin_l}" y1="{y_dd_zero:.1f}" x2="{width - margin_r}" y2="{y_dd_zero:.1f}" stroke="{c["axis"]}" stroke-width="1.2"/>')
+    svg.append(f'  <text x="{margin_l - 10}" y="{y_dd_zero + 4:.1f}" font-family="{font}" font-size="11" fill="{c["muted"]}" text-anchor="end">0.0R</text>')
     
     y_dd_bot = lower_y + lower_h
-    svg.append(f'  <line x1="{margin_l}" y1="{y_dd_bot:.1f}" x2="{width - margin_r}" y2="{y_dd_bot:.1f}" stroke="#21262d" stroke-dasharray="3,3"/>')
-    svg.append(f'  <text x="{margin_l - 10}" y="{y_dd_bot + 4:.1f}" font-family="-apple-system, sans-serif" font-size="11" fill="#8b949e" text-anchor="end">{min_dd:.1f}R</text>')
+    svg.append(f'  <line x1="{margin_l}" y1="{y_dd_bot:.1f}" x2="{width - margin_r}" y2="{y_dd_bot:.1f}" stroke="{c["grid"]}" stroke-dasharray="3,3"/>')
+    svg.append(f'  <text x="{margin_l - 10}" y="{y_dd_bot + 4:.1f}" font-family="{font}" font-size="11" fill="{c["muted"]}" text-anchor="end">{min_dd:.1f}R</text>')
 
     # Titles & Labels
-    svg.append(f'  <text x="{margin_l}" y="24" font-family="-apple-system, sans-serif" font-size="13" font-weight="600" fill="#f0f6fc">Cumulative Performance ({metrics.get("total_net_r", 0.0):+.2f}R)</text>')
-    svg.append(f'  <text x="{width - margin_r}" y="24" font-family="-apple-system, sans-serif" font-size="11" fill="#8b949e" text-anchor="end">High-Water Mark: {max_r / 1.15:+.2f}R</text>')
-    svg.append(f'  <text x="{margin_l}" y="{lower_y - 6}" font-family="-apple-system, sans-serif" font-size="11" font-weight="600" fill="#8b949e">Underwater Profile (Drawdown)</text>')
+    svg.append(f'  <text x="{margin_l}" y="24" font-family="{font}" font-size="13" font-weight="600" fill="{c["text"]}">Cumulative Performance ({metrics.get("total_net_r", 0.0):+.2f}R)</text>')
+    svg.append(f'  <text x="{width - margin_r}" y="24" font-family="{font}" font-size="11" fill="{c["muted"]}" text-anchor="end">High-Water Mark: {max(p["hwm"] for p in eq):+.2f}R</text>')
+    svg.append(f'  <text x="{margin_l}" y="{lower_y - 6}" font-family="{font}" font-size="11" font-weight="600" fill="{c["muted"]}">Underwater Profile (Drawdown)</text>')
 
     # Draw HWM Stepped Path
     hwm_pts = []
@@ -336,7 +351,7 @@ def generate_svg(metrics: dict, output_path: Path = SVG_PATH) -> None:
         x = x_coord(p["trade"])
         y = y_upper(p["hwm"])
         hwm_pts.append(f"{x:.1f},{y:.1f}")
-    svg.append(f'  <polyline points="{" ".join(hwm_pts)}" fill="none" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,4"/>')
+    svg.append(f'  <polyline points="{" ".join(hwm_pts)}" fill="none" stroke="{c["hwm"]}" stroke-width="1.5" stroke-dasharray="4,4"/>')
 
     # Draw Area under Cumulative R
     area_pts = [f"{x_coord(0):.1f},{y_upper(0.0):.1f}"]
@@ -348,16 +363,16 @@ def generate_svg(metrics: dict, output_path: Path = SVG_PATH) -> None:
         line_pts.append(f"{x:.1f},{y:.1f}")
     area_pts.append(f"{x_coord(max_t):.1f},{y_upper(0.0):.1f}")
     svg.append(f'  <polygon points="{" ".join(area_pts)}" fill="url(#eqGrad)"/>')
-    svg.append(f'  <polyline points="{" ".join(line_pts)}" fill="none" stroke="#38bdf8" stroke-width="2.5" filter="url(#glow)"/>')
+    svg.append(f'  <polyline points="{" ".join(line_pts)}" fill="none" stroke="{c["line"]}" stroke-width="2.5" filter="url(#glow)"/>')
 
     # Draw Nodes on Equity Line
     for p in eq:
         x = x_coord(p["trade"])
         y = y_upper(p["cum_r"])
-        svg.append(f'  <circle cx="{x:.1f}" cy="{y:.1f}" r="4.5" fill="#0d1117" stroke="#38bdf8" stroke-width="2"/>')
+        svg.append(f'  <circle cx="{x:.1f}" cy="{y:.1f}" r="4.5" fill="{c["bg"]}" stroke="{c["line"]}" stroke-width="2"/>')
         # Label each non-zero point
         if p["trade"] > 0:
-            svg.append(f'  <text x="{x:.1f}" y="{y - 10:.1f}" font-family="-apple-system, sans-serif" font-size="11" font-weight="bold" fill="#f0f6fc" text-anchor="middle">{p["cum_r"]:+.2f}R</text>')
+            svg.append(f'  <text x="{x:.1f}" y="{y - 10:.1f}" font-family="{font}" font-size="11" font-weight="bold" fill="{c["text"]}" text-anchor="middle">{p["cum_r"]:+.2f}R</text>')
 
     # Draw Drawdown Area & Line
     dd_area_pts = [f"{x_coord(0):.1f},{lower_y:.1f}"]
@@ -369,13 +384,13 @@ def generate_svg(metrics: dict, output_path: Path = SVG_PATH) -> None:
         dd_line_pts.append(f"{x:.1f},{y:.1f}")
     dd_area_pts.append(f"{x_coord(max_t):.1f},{lower_y:.1f}")
     svg.append(f'  <polygon points="{" ".join(dd_area_pts)}" fill="url(#ddGrad)"/>')
-    svg.append(f'  <polyline points="{" ".join(dd_line_pts)}" fill="none" stroke="#f43f5e" stroke-width="1.8"/>')
+    svg.append(f'  <polyline points="{" ".join(dd_line_pts)}" fill="none" stroke="{c["dd"]}" stroke-width="1.8"/>')
 
     # X Axis Labels
     for p in eq:
         x = x_coord(p["trade"])
         label = f'#{p["trade"]}' if p["trade"] > 0 else 'Start'
-        svg.append(f'  <text x="{x:.1f}" y="{height - 12}" font-family="-apple-system, sans-serif" font-size="11" fill="#8b949e" text-anchor="middle">{label}</text>')
+        svg.append(f'  <text x="{x:.1f}" y="{height - 12}" font-family="{font}" font-size="11" fill="{c["muted"]}" text-anchor="middle">{label}</text>')
 
     svg.append('</svg>')
     
@@ -525,14 +540,124 @@ def update_readme(metrics: dict, readme_path: Path = README_MD_PATH) -> None:
     readme_path.write_text(new_content, encoding="utf-8")
 
 
-WILSCO_SITE_TRADE_DIR = Path("/Users/wilsco/Dev/Wilsco-site/trade")
+WILSCO_SITE_TRADE_DIR = Path.home() / "Dev/Wilsco-site/trade"
+SITE_MARKER = re.compile(r"(<!-- LEDGER:(\w+) -->).*?(<!-- /LEDGER:\2 -->)", re.S)
 
 
-def sync_to_wilsco_site(metrics: dict) -> None:
-    if not WILSCO_SITE_TRADE_DIR.exists():
-        return
-    import shutil
-    shutil.copy(SVG_PATH, WILSCO_SITE_TRADE_DIR / "equity_curve.svg")
+def _esc(text) -> str:
+    return html.escape(str(text), quote=False)
+
+
+def _r(v: float) -> str:
+    return f"{v:+.2f}R".replace("-", "−")
+
+
+def _px(v) -> str:
+    return f"{v:,.2f}" if v is not None else "·"
+
+
+def site_blocks(metrics: dict) -> dict[str, str]:
+    """HTML fragments for wilsco.au/trade. R-multiples and prices only, never dollars."""
+    m = metrics
+    blocks = {}
+    blocks["stats"] = "\n".join([
+        f'    <div class="stat"><b>{_r(m["total_net_r"])}</b><span>Net result</span></div>',
+        f'    <div class="stat"><b>{_r(m["expectancy_r"])}</b><span>Average per trade</span></div>',
+        f'    <div class="stat"><b>{m["win_rate"]:.0f}%</b><span>Win rate ({m["wins_count"]}W / {m["losses_count"]}L)</span></div>',
+        f'    <div class="stat"><b>{m["n"]}</b><span>Closed trades (gate is 30)</span></div>',
+    ])
+    cols = [
+        ("Edge", [("Net result", _r(m["total_net_r"])), ("Average per trade", _r(m["expectancy_r"])),
+                  ("Win rate", f'{m["win_rate"]:.1f}%'), ("Average win", _r(m["avg_win_r"])),
+                  ("Average loss", _r(m["avg_loss_r"]))]),
+        ("Protection", [("Max drawdown", _r(m["max_dd_r"])), ("Recovery factor", f'{m["recovery_factor"]:.2f}'),
+                        ("Longest losing run", str(m["max_loss_streak"])), ("Longest winning run", str(m["max_win_streak"])),
+                        ("SQN", f'{m["sqn"]:.2f}')]),
+        ("Execution", [("Profit factor", f'{m["profit_factor"]:.2f}'), ("Payoff ratio", f'{m["payoff_ratio"]:.2f}×'),
+                       ("Costs as % of gross", f'{m["cost_drag_pct"]:.1f}%'), ("Average win held", f'{m["win_hold"]:.1f}h'),
+                       ("Average loss held", f'{m["loss_hold"]:.1f}h')]),
+    ]
+    blocks["tearsheet"] = "\n".join(
+        f'      <div class="tear-col">\n        <h4>{h}</h4>\n'
+        + "\n".join(f'        <div class="tear-row"><span>{k}</span><b>{v}</b></div>' for k, v in rows)
+        + "\n      </div>" for h, rows in cols)
+
+    opens = []
+    for t in m.get("open_trades", []):
+        arrow = "▲" if t["side"] == "long" else "▼"
+        entry, stop = t["entry_price"], t["stop_loss"]
+        risk = abs(entry - stop)
+        levels = [("stop", stop, None), ("entry", entry, None), ("tp1", t.get("tp1"), 0.8), ("tp2", t.get("tp2"), 0.2)]
+        levels = [lv for lv in levels if lv[1]]
+        levels.sort(key=lambda lv: -lv[1])  # highest price on top
+        rows = []
+        for name, px, _share in levels:
+            note = ""
+            if name.startswith("tp") and risk:
+                note = f" · {abs(px - entry) / risk:.2f}R"
+            elif name == "stop":
+                note = " · −1R before costs"
+            rows.append(f"{name:<6}{_px(px)}{note}")
+        setup = t.get("setup_tag") or "untagged"
+        opens.append(
+            '    <div class="active-posture">\n'
+            f'      <div class="status-tag">Open · paper</div>\n'
+            f'      <h3>Trade #{t["id"]} · {arrow} {_esc(t["symbol"])}</h3>\n'
+            f'      <p class="setup">Setup: <code>{_esc(setup)}</code></p>\n'
+            f'      <pre class="active-ladder">{chr(10).join(rows)}</pre>\n'
+            "    </div>")
+    blocks["open"] = "\n".join(opens) if opens else '    <p class="prose">Nothing open right now.</p>'
+
+    blocks["setups"] = "\n".join(
+        "          <tr>"
+        f"<td><code>{_esc(r['setup'])}</code></td><td class=\"num\">{r['trades']}</td>"
+        f"<td class=\"num\">{r['win_rate']:.0f}%</td><td class=\"num\"><strong>{_r(r['net_r'])}</strong></td>"
+        f"<td class=\"num\">{_r(r['expectancy'])}</td><td class=\"num\">{r['avg_hold']:.1f}h</td>"
+        f"<td class=\"tag-cell\">{_esc(r['status'])}</td></tr>"
+        for r in m["setup_table"])
+
+    book = []
+    for p_ in m["processed"]:
+        book.append(
+            "          <tr>"
+            f"<td><strong>#{p_['id']}</strong></td><td>{p_['date']}</td><td>{p_['side']}</td><td>{_esc(p_['symbol'])}</td>"
+            f"<td><code>{_esc(p_['setup'])}</code></td><td class=\"num\">{_px(p_['entry'])}</td>"
+            f"<td class=\"num\">{_px(p_['stop'])}</td><td class=\"num\">{_px(p_['exit'])}</td>"
+            f"<td>{_esc(p_['trigger'])}</td><td class=\"num\">{p_['hold_hours']:.1f}h</td>"
+            f"<td class=\"num\"><strong>{_r(p_['r_multiple'])}</strong></td></tr>")
+    for t in m.get("open_trades", []):
+        arrow = "▲" if t["side"] == "long" else "▼"
+        opened = datetime.fromtimestamp(t["ts"], tz=timezone.utc).strftime("%Y-%m-%d %H:%M")
+        book.append(
+            "          <tr>"
+            f"<td><strong>#{t['id']}</strong></td><td>{opened}</td><td>{arrow}</td><td>{_esc(t['symbol'])}</td>"
+            f"<td><code>{_esc(t.get('setup_tag') or 'untagged')}</code></td><td class=\"num\">{_px(t['entry_price'])}</td>"
+            f"<td class=\"num\">{_px(t['stop_loss'])}</td><td class=\"num\">·</td>"
+            f"<td>open</td><td class=\"num\">·</td><td class=\"num\">open</td></tr>")
+    blocks["book"] = "\n".join(book)
+    blocks["asof"] = datetime.now(tz=timezone.utc).astimezone().strftime("%-d %B %Y")
+    return blocks
+
+
+def fill_site_page(page: str, blocks: dict[str, str]) -> str:
+    def sub(mt: re.Match) -> str:
+        name = mt.group(2)
+        if name not in blocks:
+            return mt.group(0)
+        body = blocks[name]
+        inline = "\n" not in body
+        return mt.group(1) + (body if inline else "\n" + body + "\n") + mt.group(3)
+    return SITE_MARKER.sub(sub, page)
+
+
+def sync_to_wilsco_site(metrics: dict, site_dir: Path = WILSCO_SITE_TRADE_DIR) -> bool:
+    """Regenerate wilsco.au/trade from the same metrics: light-theme SVG plus the page's LEDGER blocks."""
+    page_path = site_dir / "index.html"
+    if not page_path.exists():
+        return False
+    generate_svg(metrics, site_dir / "equity_curve.svg", theme="light")
+    page_path.write_text(fill_site_page(page_path.read_text(encoding="utf-8"), site_blocks(metrics)), encoding="utf-8")
+    return True
 
 
 def export_public_ledger() -> int:

@@ -5,7 +5,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from harness.export import compute_metrics, generate_svg, generate_trades_md, update_readme
+from harness.export import (compute_metrics, fill_site_page, generate_svg, generate_trades_md,
+                            site_blocks, sync_to_wilsco_site, update_readme)
 
 from harness import risk as _risk  # pin synthetic $ config; never read the gitignored local one
 _risk.LOCAL_CONFIG_PATH = Path(__file__).parent / "risk_config.test.json"
@@ -120,3 +121,36 @@ class TestExportPipeline(unittest.TestCase):
         self.assertIn("## Paper Trading Performance (Unitized R)", text)
         self.assertIn("assets/equity_curve.svg", text)
         self.assertNotIn("$", text)  # Zero dollar amounts in public output!
+
+    def test_light_svg_theme(self):
+        m = compute_metrics(self.mock_trades)
+        generate_svg(m, output_path=self.svg_path, theme="light")
+        svg = self.svg_path.read_text(encoding="utf-8")
+        self.assertIn('fill="#f7f4ee"', svg)
+        self.assertNotIn("#f43f5e", svg)  # no red drawdown on the site (red-green colourblind)
+        self.assertNotIn("{c", svg)
+
+    def test_site_page_blocks(self):
+        m = compute_metrics(self.mock_trades)
+        page = ("<p><!-- LEDGER:asof -->old<!-- /LEDGER:asof --></p>\n"
+                "<div><!-- LEDGER:stats -->\nstale\n<!-- /LEDGER:stats --></div>\n"
+                "<tbody><!-- LEDGER:book -->\n<!-- /LEDGER:book --></tbody>\n"
+                "<!-- LEDGER:open -->\n<!-- /LEDGER:open -->")
+        out = fill_site_page(page, site_blocks(m))
+        self.assertNotIn("stale", out)
+        self.assertNotIn(">old<", out)
+        self.assertIn("+0.74R", out)
+        self.assertIn("#3", out)  # open trade row
+        self.assertIn("Trade #3", out)
+        self.assertNotIn("$", out)
+        self.assertEqual(out, fill_site_page(out, site_blocks(m)))  # idempotent
+
+    def test_sync_to_site_dir(self):
+        m = compute_metrics(self.mock_trades)
+        site = self.tmp / "trade"
+        self.assertFalse(sync_to_wilsco_site(m, site_dir=site))  # no page, no-op
+        site.mkdir()
+        (site / "index.html").write_text("<!-- LEDGER:stats --><!-- /LEDGER:stats -->", encoding="utf-8")
+        self.assertTrue(sync_to_wilsco_site(m, site_dir=site))
+        self.assertIn("Net result", (site / "index.html").read_text(encoding="utf-8"))
+        self.assertTrue((site / "equity_curve.svg").exists())
