@@ -508,7 +508,7 @@ def update_readme(metrics: dict, readme_path: Path = README_MD_PATH) -> None:
     content = readme_path.read_text(encoding="utf-8")
 
     scorecard_block = f"""<!-- SCOREBOARD_START -->
-## Paper Trading Performance (Unitized R)
+## Verified Performance (Unitized R)
 
 ![Cumulative Performance](assets/equity_curve.svg)
 
@@ -519,7 +519,7 @@ def update_readme(metrics: dict, readme_path: Path = README_MD_PATH) -> None:
 | **Win Rate** | **{metrics['win_rate']:.1f}%** ({metrics['wins_count']}W / {metrics['losses_count']}L) | **Recovery Factor** | **{metrics['recovery_factor']:.2f}** |
 | **Cost Drag** | **{metrics['cost_drag_pct']:.1f}% of gross** | **Payoff Ratio** | **{metrics['payoff_ratio']:.2f}x** |
 
-👉 **[View Full Paper Trade Ledger & Setup Attribution (TRADES.md)](TRADES.md)**
+👉 **[View Full Verified Trade Ledger & Setup Attribution (TRADES.md)](TRADES.md)** · **[Live Desk Dashboard (wilsco.au/trade)](https://wilsco.au/trade)**
 <!-- SCOREBOARD_END -->"""
 
     if "<!-- SCOREBOARD_START -->" in content:

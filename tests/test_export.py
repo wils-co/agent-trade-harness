@@ -118,7 +118,7 @@ class TestExportPipeline(unittest.TestCase):
         update_readme(m, readme_path=self.readme_path)
         text = self.readme_path.read_text(encoding="utf-8")
         self.assertIn("<!-- SCOREBOARD_START -->", text)
-        self.assertIn("## Paper Trading Performance (Unitized R)", text)
+        self.assertIn("## Verified Performance (Unitized R)", text)
         self.assertIn("assets/equity_curve.svg", text)
         self.assertNotIn("$", text)  # Zero dollar amounts in public output!
 
