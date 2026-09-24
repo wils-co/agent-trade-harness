@@ -525,6 +525,16 @@ def update_readme(metrics: dict, readme_path: Path = README_MD_PATH) -> None:
     readme_path.write_text(new_content, encoding="utf-8")
 
 
+WILSCO_SITE_TRADE_DIR = Path("/Users/wilsco/Dev/Wilsco-site/trade")
+
+
+def sync_to_wilsco_site(metrics: dict) -> None:
+    if not WILSCO_SITE_TRADE_DIR.exists():
+        return
+    import shutil
+    shutil.copy(SVG_PATH, WILSCO_SITE_TRADE_DIR / "equity_curve.svg")
+
+
 def export_public_ledger() -> int:
     trades = load_trades()
     if not trades:
@@ -535,6 +545,7 @@ def export_public_ledger() -> int:
     generate_svg(metrics)
     generate_trades_md(metrics)
     update_readme(metrics)
+    sync_to_wilsco_site(metrics)
 
     print("✅ Public export complete (Unitized R):")
     print(f"  • Cumulative Return: {metrics['total_net_r']:+.2f}R (n={metrics['n']})")
@@ -544,6 +555,8 @@ def export_public_ledger() -> int:
     print(f"  • Equity Curve:      {SVG_PATH.relative_to(ROOT)}")
     print(f"  • Trade Ledger:      {TRADES_MD_PATH.relative_to(ROOT)}")
     print(f"  • README updated:    {README_MD_PATH.relative_to(ROOT)}")
+    if WILSCO_SITE_TRADE_DIR.exists():
+        print(f"  • Wilsco-site sync:  {WILSCO_SITE_TRADE_DIR}/")
     return 0
 
 
