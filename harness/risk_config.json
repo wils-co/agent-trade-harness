@@ -1,5 +1,5 @@
 {
-  "max_drawdown_pct": 100.0,
+  "max_drawdown_pct": 8.0,
   "max_leverage": 25,
   "require_stop_loss": true,
   "loss_streak_pause": 3,
@@ -9,6 +9,5 @@
     "ETH",
     "SOL",
     "HYPE"
-  ],
-  "_paused_max_drawdown_pct_orig": 8.0
+  ]
 }
