@@ -8,6 +8,7 @@ and the paper ticket harness already in this repo.
   desk brief ETH
   desk l2 ETH
   desk funding ETH
+  desk atr ETH               # daily ATR & target calibration guidance
   desk state                 # needs HYPERLIQUID_USER_ADDRESS
   desk poly [query]
   desk ticket "long eth entry 2500 sl 2400 size 200 setup:vwap-reclaim tf:15m conv:4"
@@ -23,9 +24,12 @@ and the paper ticket harness already in this repo.
 """
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 import sys
+import time
+import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -74,6 +78,66 @@ def _poly(args: list[str]) -> int:
     return _run(_first(POLY_CANDIDATES), args)
 
 
+def print_atr(coin: str = "ETH") -> int:
+    url = "https://api.hyperliquid.xyz/info"
+    now = int(time.time() * 1000)
+    start = now - (20 * 86400 * 1000)
+    req = urllib.request.Request(
+        url,
+        data=json.dumps({
+            "type": "candleSnapshot",
+            "req": {"coin": coin.upper(), "interval": "1d", "startTime": start}
+        }).encode("utf-8"),
+        headers={"Content-Type": "application/json"}
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            candles = json.loads(resp.read().decode("utf-8"))
+    except Exception as e:
+        print(f"Failed to fetch candles for ATR: {e}")
+        return 1
+
+    if not candles:
+        print(f"No candles returned for {coin}.")
+        return 1
+
+    trs = []
+    prev_close = None
+    for c in candles:
+        h = float(c["h"])
+        l = float(c["l"])
+        cl = float(c["c"])
+        if prev_close is not None:
+            tr = max(h - l, abs(h - prev_close), abs(l - prev_close))
+        else:
+            tr = h - l
+        trs.append(tr)
+        prev_close = cl
+
+    last_c = float(candles[-1]["c"])
+    atr_14 = sum(trs[-14:]) / 14 if len(trs) >= 14 else sum(trs) / len(trs)
+    atr_7 = sum(trs[-7:]) / 7 if len(trs) >= 7 else sum(trs) / len(trs)
+
+    pct_14 = (atr_14 / last_c) * 100
+    pct_7 = (atr_7 / last_c) * 100
+
+    tp1_pct = pct_14 * 0.55
+    tp1_pts = last_c * (tp1_pct / 100)
+    tp2_pct = pct_14 * 1.10
+    tp2_pts = last_c * (tp2_pct / 100)
+    sl_pct = pct_14 * 0.28
+    sl_pts = last_c * (sl_pct / 100)
+
+    print(f"Mark / Close: {last_c:,.2f}")
+    print(f"14-Day ATR:   ${atr_14:,.2f} ({pct_14:.2f}% / day)")
+    print(f" 7-Day ATR:   ${atr_7:,.2f} ({pct_7:.2f}% / day)")
+    print("Calibration Guidance:")
+    print(f"  Suggested SL  (~0.28x ATR): ±{sl_pct:.2f}% (±${sl_pts:,.2f})")
+    print(f"  Suggested TP1 (~0.55x ATR): ±{tp1_pct:.2f}% (±${tp1_pts:,.2f})")
+    print(f"  Suggested TP2 (~1.10x ATR): ±{tp2_pct:.2f}% (±${tp2_pts:,.2f})")
+    return 0
+
+
 def _harness(args: list[str]) -> int:
     proc = subprocess.run(
         [str(PY), "-m", "harness.agent", *args],
@@ -100,6 +164,9 @@ def main(argv: list[str]) -> int:
     if cmd == "funding":
         coin = rest[0] if rest else "ETH"
         return _hl(["funding", coin, "--hours", "24", "--limit", "8"])
+    if cmd in ("atr", "volatility"):
+        coin = rest[0] if rest else "ETH"
+        return print_atr(coin)
     if cmd == "brief":
         coin = rest[0] if rest else "ETH"
         print(f"=== {coin} book ===", flush=True)
@@ -107,7 +174,10 @@ def main(argv: list[str]) -> int:
         if rc:
             return rc
         print(f"\n=== {coin} funding (24h) ===", flush=True)
-        return _hl(["funding", coin, "--hours", "24", "--limit", "8"])
+        rc_f = _hl(["funding", coin, "--hours", "24", "--limit", "8"])
+        print(f"\n=== {coin} volatility & daily ATR ===", flush=True)
+        print_atr(coin)
+        return rc_f
     if cmd == "state":
         return _hl(["state", *rest])
     if cmd == "poly":
