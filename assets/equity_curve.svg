@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 360" width="100%" height="100%">
+  <defs>
+    <linearGradient id="eqGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.0"/>
+    </linearGradient>
+    <linearGradient id="ddGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f43f5e" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#f43f5e" stop-opacity="0.35"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#38bdf8" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+  <rect width="760" height="360" rx="10" fill="#0d1117" stroke="#30363d" stroke-width="1.5"/>
+  <line x1="60" y1="230.0" x2="730" y2="230.0" stroke="#21262d" stroke-dasharray="3,3"/>
+  <text x="50" y="234.0" font-family="-apple-system, sans-serif" font-size="11" fill="#8b949e" text-anchor="end">-0.5R</text>
+  <line x1="60" y1="192.0" x2="730" y2="192.0" stroke="#21262d" stroke-dasharray="3,3"/>
+  <text x="50" y="196.0" font-family="-apple-system, sans-serif" font-size="11" fill="#8b949e" text-anchor="end">+0.8R</text>
+  <line x1="60" y1="154.0" x2="730" y2="154.0" stroke="#21262d" stroke-dasharray="3,3"/>
+  <text x="50" y="158.0" font-family="-apple-system, sans-serif" font-size="11" fill="#8b949e" text-anchor="end">+2.2R</text>
+  <line x1="60" y1="116.0" x2="730" y2="116.0" stroke="#21262d" stroke-dasharray="3,3"/>
+  <text x="50" y="120.0" font-family="-apple-system, sans-serif" font-size="11" fill="#8b949e" text-anchor="end">+3.5R</text>
+  <line x1="60" y1="78.0" x2="730" y2="78.0" stroke="#21262d" stroke-dasharray="3,3"/>
+  <text x="50" y="82.0" font-family="-apple-system, sans-serif" font-size="11" fill="#8b949e" text-anchor="end">+4.8R</text>
+  <line x1="60" y1="40.0" x2="730" y2="40.0" stroke="#21262d" stroke-dasharray="3,3"/>
+  <text x="50" y="44.0" font-family="-apple-system, sans-serif" font-size="11" fill="#8b949e" text-anchor="end">+6.2R</text>
+  <line x1="60" y1="215.8" x2="730" y2="215.8" stroke="#484f58" stroke-width="1.2"/>
+  <line x1="60" y1="250.0" x2="730" y2="250.0" stroke="#484f58" stroke-width="1.2"/>
+  <text x="50" y="254.0" font-family="-apple-system, sans-serif" font-size="11" fill="#8b949e" text-anchor="end">0.0R</text>
+  <line x1="60" y1="320.0" x2="730" y2="320.0" stroke="#21262d" stroke-dasharray="3,3"/>
+  <text x="50" y="324.0" font-family="-apple-system, sans-serif" font-size="11" fill="#8b949e" text-anchor="end">-1.5R</text>
+  <text x="60" y="24" font-family="-apple-system, sans-serif" font-size="13" font-weight="600" fill="#f0f6fc">Cumulative Performance (+5.38R)</text>
+  <text x="730" y="24" font-family="-apple-system, sans-serif" font-size="11" fill="#8b949e" text-anchor="end">High-Water Mark: +5.38R</text>
+  <text x="60" y="244" font-family="-apple-system, sans-serif" font-size="11" font-weight="600" fill="#8b949e">Underwater Profile (Drawdown)</text>
+  <polyline points="60.0,215.8 227.5,163.2 395.0,163.2 562.5,139.1 730.0,62.9" fill="none" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,4"/>
+  <polygon points="60.0,215.8 60.0,215.8 227.5,163.2 395.0,194.8 562.5,139.1 730.0,62.9 730.0,215.8" fill="url(#eqGrad)"/>
+  <polyline points="60.0,215.8 227.5,163.2 395.0,194.8 562.5,139.1 730.0,62.9" fill="none" stroke="#38bdf8" stroke-width="2.5" filter="url(#glow)"/>
+  <circle cx="60.0" cy="215.8" r="4.5" fill="#0d1117" stroke="#38bdf8" stroke-width="2"/>
+  <circle cx="227.5" cy="163.2" r="4.5" fill="#0d1117" stroke="#38bdf8" stroke-width="2"/>
+  <text x="227.5" y="153.2" font-family="-apple-system, sans-serif" font-size="11" font-weight="bold" fill="#f0f6fc" text-anchor="middle">+1.85R</text>
+  <circle cx="395.0" cy="194.8" r="4.5" fill="#0d1117" stroke="#38bdf8" stroke-width="2"/>
+  <text x="395.0" y="184.8" font-family="-apple-system, sans-serif" font-size="11" font-weight="bold" fill="#f0f6fc" text-anchor="middle">+0.74R</text>
+  <circle cx="562.5" cy="139.1" r="4.5" fill="#0d1117" stroke="#38bdf8" stroke-width="2"/>
+  <text x="562.5" y="129.1" font-family="-apple-system, sans-serif" font-size="11" font-weight="bold" fill="#f0f6fc" text-anchor="middle">+2.70R</text>
+  <circle cx="730.0" cy="62.9" r="4.5" fill="#0d1117" stroke="#38bdf8" stroke-width="2"/>
+  <text x="730.0" y="52.9" font-family="-apple-system, sans-serif" font-size="11" font-weight="bold" fill="#f0f6fc" text-anchor="middle">+5.38R</text>
+  <polygon points="60.0,250.0 60.0,250.0 227.5,250.0 395.0,301.8 562.5,250.0 730.0,250.0 730.0,250.0" fill="url(#ddGrad)"/>
+  <polyline points="60.0,250.0 227.5,250.0 395.0,301.8 562.5,250.0 730.0,250.0" fill="none" stroke="#f43f5e" stroke-width="1.8"/>
+  <text x="60.0" y="348" font-family="-apple-system, sans-serif" font-size="11" fill="#8b949e" text-anchor="middle">Start</text>
+  <text x="227.5" y="348" font-family="-apple-system, sans-serif" font-size="11" fill="#8b949e" text-anchor="middle">#1</text>
+  <text x="395.0" y="348" font-family="-apple-system, sans-serif" font-size="11" fill="#8b949e" text-anchor="middle">#2</text>
+  <text x="562.5" y="348" font-family="-apple-system, sans-serif" font-size="11" fill="#8b949e" text-anchor="middle">#3</text>
+  <text x="730.0" y="348" font-family="-apple-system, sans-serif" font-size="11" fill="#8b949e" text-anchor="middle">#4</text>
+</svg>

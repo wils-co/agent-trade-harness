@@ -19,6 +19,7 @@ and the paper ticket harness already in this repo.
   desk flatten <price>
   desk report
   desk status
+  desk export                # generate public unitized (R) ledger & SVG equity curve
 """
 from __future__ import annotations
 
@@ -141,6 +142,9 @@ def main(argv: list[str]) -> int:
         return _harness(["check"])
     if cmd == "watch":
         return _harness(["watch", *rest])
+    if cmd == "export":
+        from harness.export import export_public_ledger
+        return export_public_ledger()
 
     raise SystemExit(f"unknown command: {cmd}\n\n{__doc__.strip()}")
 

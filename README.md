@@ -47,3 +47,19 @@ No agent wallet on Flash (or any chat seat). Klud = escalate only.
 3. You: close the stale open BTC trade (#1) with a real price, or mark it a
    build artifact — it blocks the first honest `desk report`.
 4. Then: tag 30 trades, read the report, decide with data.
+
+
+<!-- SCOREBOARD_START -->
+## Verified Performance (Unitized R)
+
+![Cumulative Performance](assets/equity_curve.svg)
+
+| Metric | Result | Metric | Result |
+| :--- | :--- | :--- | :--- |
+| **Cumulative Return** | **+5.38R** | **Max Drawdown** | **-1.11R** |
+| **Expectancy** | **+1.35R / trade** | **Profit Factor** | **5.85** |
+| **Win Rate** | **75.0%** (3W / 1L) | **Recovery Factor** | **4.85** |
+| **Cost Drag** | **12.2% of gross** | **Payoff Ratio** | **1.95x** |
+
+👉 **[View Full Verified Trade Ledger & Setup Attribution (TRADES.md)](TRADES.md)**
+<!-- SCOREBOARD_END -->

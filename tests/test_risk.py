@@ -98,8 +98,8 @@ class TestRiskEngine(unittest.TestCase):
         self.assertTrue(d.approved)
 
     def test_risk_cap_blocks_wide_stop(self):
-        # SL ~15% away on $300 = $45 risk > $35 cap
-        d = self._order(stop_loss=66000)
+        # SL ~24% away on $300 = $71.50 risk > $50 cap
+        d = self._order(stop_loss=60000)
         self.assertFalse(d.approved)
         self.assertIn("risk", d.reason.lower())
 
