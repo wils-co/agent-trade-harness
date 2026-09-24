@@ -1,7 +1,4 @@
 {
-  "max_risk_per_trade_usd": 50.0,
-  "max_position_notional_usd": 6000.0,
-  "daily_loss_cap_usd": 70.0,
   "max_drawdown_pct": 100.0,
   "max_leverage": 25,
   "require_stop_loss": true,
@@ -13,6 +10,5 @@
     "SOL",
     "HYPE"
   ],
-  "starting_equity_usd": 500.0,
   "_paused_max_drawdown_pct_orig": 8.0
 }

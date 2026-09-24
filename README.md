@@ -50,7 +50,7 @@ No agent wallet on Flash (or any chat seat). Klud = escalate only.
 
 
 <!-- SCOREBOARD_START -->
-## Verified Performance (Unitized R)
+## Paper Trading Performance (Unitized R)
 
 ![Cumulative Performance](assets/equity_curve.svg)
 
@@ -61,5 +61,5 @@ No agent wallet on Flash (or any chat seat). Klud = escalate only.
 | **Win Rate** | **75.0%** (3W / 1L) | **Recovery Factor** | **4.85** |
 | **Cost Drag** | **12.2% of gross** | **Payoff Ratio** | **1.95x** |
 
-👉 **[View Full Verified Trade Ledger & Setup Attribution (TRADES.md)](TRADES.md)**
+👉 **[View Full Paper Trade Ledger & Setup Attribution (TRADES.md)](TRADES.md)**
 <!-- SCOREBOARD_END -->

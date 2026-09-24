@@ -11,6 +11,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from harness.risk import RiskEngine, load_config
 from harness.ticket import parse_ticket, derive_size, format_ticket, TicketError
 
+from harness import risk as _risk  # pin synthetic $ config; never read the gitignored local one
+_risk.LOCAL_CONFIG_PATH = Path(__file__).parent / "risk_config.test.json"
+
 
 def fresh_engine(tmpdir):
     return RiskEngine(os.path.join(tmpdir, "test.db"))

@@ -7,6 +7,9 @@ from pathlib import Path
 
 from harness.export import compute_metrics, generate_svg, generate_trades_md, update_readme
 
+from harness import risk as _risk  # pin synthetic $ config; never read the gitignored local one
+_risk.LOCAL_CONFIG_PATH = Path(__file__).parent / "risk_config.test.json"
+
 
 class TestExportPipeline(unittest.TestCase):
     def setUp(self):
@@ -28,10 +31,10 @@ class TestExportPipeline(unittest.TestCase):
                 "tp2": 2522.0,
                 "status": "closed",
                 "exit_price": 2522.0,
-                "net_pnl_usd": 92.67,
-                "gross_pnl_usd": 97.84,
-                "fees_usd": 3.57,
-                "funding_usd": 1.60,
+                "net_pnl_usd": 111.0,
+                "gross_pnl_usd": 115.2,
+                "fees_usd": 3.0,
+                "funding_usd": 1.2,
                 "hold_seconds": 51235.0,
                 "setup_tag": None,
                 "thesis": "long eth entry 2400 sl 2363",
@@ -48,10 +51,10 @@ class TestExportPipeline(unittest.TestCase):
                 "tp2": 2380.0,
                 "status": "closed",
                 "exit_price": 2480.0,
-                "net_pnl_usd": -55.72,
-                "gross_pnl_usd": -50.0,
-                "fees_usd": 4.24,
-                "funding_usd": 1.48,
+                "net_pnl_usd": -66.6,
+                "gross_pnl_usd": -60.0,
+                "fees_usd": 5.0,
+                "funding_usd": 1.6,
                 "hold_seconds": 13844.0,
                 "setup_tag": None,
                 "thesis": "short eth entry 2448.25 sl 2480",
@@ -103,7 +106,7 @@ class TestExportPipeline(unittest.TestCase):
         generate_trades_md(m, output_path=self.trades_md_path)
         self.assertTrue(self.trades_md_path.exists())
         text = self.trades_md_path.read_text(encoding="utf-8")
-        self.assertIn("Verified Trade Ledger (Unitized R)", text)
+        self.assertIn("Paper Trade Ledger (Unitized R)", text)
         self.assertIn("#1 ▲ ETH · TP2 · R:R 1.85", text)
         self.assertIn("#2 ▼ ETH · SL · R:R -1.11", text)
         self.assertIn("assets/equity_curve.svg", text)
@@ -114,6 +117,6 @@ class TestExportPipeline(unittest.TestCase):
         update_readme(m, readme_path=self.readme_path)
         text = self.readme_path.read_text(encoding="utf-8")
         self.assertIn("<!-- SCOREBOARD_START -->", text)
-        self.assertIn("## Verified Performance (Unitized R)", text)
+        self.assertIn("## Paper Trading Performance (Unitized R)", text)
         self.assertIn("assets/equity_curve.svg", text)
         self.assertNotIn("$", text)  # Zero dollar amounts in public output!

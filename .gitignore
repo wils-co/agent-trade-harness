@@ -14,3 +14,4 @@ journal/pending.json
 harness/KILL
 HANDOVER*.md
 .DS_Store
+harness/risk_config.local.json

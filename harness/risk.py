@@ -15,6 +15,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 CONFIG_PATH = Path(__file__).parent / "risk_config.json"
+# Dollar-denominated keys (risk unit, caps, starting equity) live here, gitignored,
+# so the public repo never reveals account scale. Overrides CONFIG_PATH.
+LOCAL_CONFIG_PATH = Path(__file__).parent / "risk_config.local.json"
 
 DEFAULT_CONFIG = {
     "max_risk_per_trade_usd": 10.0,
@@ -26,7 +29,7 @@ DEFAULT_CONFIG = {
     "loss_streak_pause": 3,
     "cooldown_seconds": 86400,
     "allowed_symbols": ["BTC", "ETH"],
-    "starting_equity_usd": 500.0,
+    "starting_equity_usd": 1000.0,
 }
 
 
@@ -34,6 +37,8 @@ def load_config() -> dict:
     cfg = dict(DEFAULT_CONFIG)
     if CONFIG_PATH.exists():
         cfg.update(json.loads(CONFIG_PATH.read_text()))
+    if LOCAL_CONFIG_PATH.exists():
+        cfg.update(json.loads(LOCAL_CONFIG_PATH.read_text()))
     return cfg
 
 

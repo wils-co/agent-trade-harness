@@ -24,7 +24,12 @@ SVG_PATH = ASSETS_DIR / "equity_curve.svg"
 TRADES_MD_PATH = ROOT / "TRADES.md"
 README_MD_PATH = ROOT / "README.md"
 
-BASE_RISK_USD = 50.00  # SSOT risk unit (1R = $50.00)
+
+
+def base_risk_usd() -> float:
+    """1R = the per-trade risk cap from the (gitignored) local config."""
+    from .risk import load_config
+    return float(load_config()["max_risk_per_trade_usd"])
 
 
 def load_trades(db_path: Path = DB_PATH) -> list[dict]:
@@ -85,7 +90,7 @@ def compute_metrics(trades: list[dict]) -> dict:
 
     for t in closed:
         net_usd = t.get("net_pnl_usd") or 0.0
-        r_mult = round(net_usd / BASE_RISK_USD, 2)
+        r_mult = round(net_usd / base_risk_usd(), 2)
         cum_r = round(cum_r + r_mult, 2)
         if cum_r > hwm:
             hwm = cum_r
@@ -378,25 +383,41 @@ def generate_svg(metrics: dict, output_path: Path = SVG_PATH) -> None:
     output_path.write_text("\n".join(svg), encoding="utf-8")
 
 
+BOX_W = 25  # inner width of each tear-sheet column
+
+
+def _cell(label: str, value: str) -> str:
+    return f" {label}{value:>{BOX_W - 2 - len(label)}} "
+
+
+def tear_sheet_box(m: dict) -> list[str]:
+    """Three-column text box; every row is built to the same width."""
+    rows = [
+        (("Net Return:", f"{m['total_net_r']:+.2f}R"), ("Max Drawdown:", f"{m['max_dd_r']:+.2f}R"), ("Profit Factor:", f"{m['profit_factor']:.2f}")),
+        (("Expectancy:", f"{m['expectancy_r']:+.2f}R/trd"), ("Recovery Factor:", f"{m['recovery_factor']:.2f}"), ("Payoff Ratio:", f"{m['payoff_ratio']:.2f}x")),
+        (("Win Rate:", f"{m['win_rate']:.1f}%"), ("Max Consec Loss:", f"{m['max_loss_streak']:d}"), ("Cost Drag:", f"{m['cost_drag_pct']:.1f}%")),
+        (("Avg Win:", f"{m['avg_win_r']:+.2f}R"), ("Max Consec Win:", f"{m['max_win_streak']:d}"), ("Avg Win Hold:", f"{m['win_hold']:.1f}h")),
+        (("Avg Loss:", f"{m['avg_loss_r']:+.2f}R"), ("SQN Score:", f"{m['sqn']:.2f}"), ("Avg Loss Hold:", f"{m['loss_hold']:.1f}h")),
+    ]
+    rule = "─" * BOX_W
+    heads = ("EDGE & EXPECTANCY", "CAPITAL PROTECTION", "EXECUTION EFFICIENCY")
+    out = [f"┌{rule}┬{rule}┬{rule}┐", "│" + "│".join(h.center(BOX_W) for h in heads) + "│", f"├{rule}┼{rule}┼{rule}┤"]
+    out += ["│" + "│".join(_cell(*c) for c in row) + "│" for row in rows]
+    out.append(f"└{rule}┴{rule}┴{rule}┘")
+    return out
+
+
 def generate_trades_md(metrics: dict, output_path: Path = TRADES_MD_PATH) -> None:
     lines = [
-        "# Verified Trade Ledger (Unitized R)",
+        "# Paper Trade Ledger (Unitized R)",
         "",
         "> [!NOTE]",
-        "> All performance is unitized in **R-multiples** (risk units per trade) net of modeled taker fees and funding drag. Dollar sizing, margin, and account balances are strictly omitted.",
+        "> **Paper trades** — journaled tickets, no real capital; the harness cannot place live orders. All performance is unitized in **R-multiples** (risk units per trade) net of modeled taker fees and funding drag. Dollar sizing, margin, and account balances are strictly omitted.",
         "",
         "## Performance Tear-Sheet",
         "",
         "```text",
-        "┌─────────────────────────┬─────────────────────────┬─────────────────────────┐",
-        "│     EDGE & EXPECTANCY   │    CAPITAL PROTECTION   │    EXECUTION EFFICIENCY │",
-        "├─────────────────────────┼─────────────────────────┼─────────────────────────┤",
-        f"│ Net Return:     {metrics['total_net_r']:>+6.2f}R  │ Max Drawdown:   {metrics['max_dd_r']:>+7.2f}R │ Profit Factor:    {metrics['profit_factor']:>5.2f} │",
-        f"│ Expectancy:  {metrics['expectancy_r']:>+6.2f}R/trd │ Recovery Factor:  {metrics['recovery_factor']:>6.2f} │ Payoff Ratio:    {metrics['payoff_ratio']:>5.2f}x │",
-        f"│ Win Rate:        {metrics['win_rate']:>5.1f}%  │ Max Consec Loss:     {metrics['max_loss_streak']:>2d} │ Cost Drag:        {metrics['cost_drag_pct']:>4.1f}% │",
-        f"│ Avg Win:        {metrics['avg_win_r']:>+6.2f}R  │ Max Consec Win:      {metrics['max_win_streak']:>2d} │ Avg Win Hold:    {metrics['win_hold']:>5.1f}h │",
-        f"│ Avg Loss:       {metrics['avg_loss_r']:>+6.2f}R  │ SQN Score:         {metrics['sqn']:>5.2f} │ Avg Loss Hold:   {metrics['loss_hold']:>5.1f}h │",
-        "└─────────────────────────┴─────────────────────────┴─────────────────────────┘",
+        *tear_sheet_box(metrics),
         "```",
         "",
         "## Cumulative Performance & Drawdown Profile",
@@ -472,7 +493,7 @@ def update_readme(metrics: dict, readme_path: Path = README_MD_PATH) -> None:
     content = readme_path.read_text(encoding="utf-8")
 
     scorecard_block = f"""<!-- SCOREBOARD_START -->
-## Verified Performance (Unitized R)
+## Paper Trading Performance (Unitized R)
 
 ![Cumulative Performance](assets/equity_curve.svg)
 
@@ -483,7 +504,7 @@ def update_readme(metrics: dict, readme_path: Path = README_MD_PATH) -> None:
 | **Win Rate** | **{metrics['win_rate']:.1f}%** ({metrics['wins_count']}W / {metrics['losses_count']}L) | **Recovery Factor** | **{metrics['recovery_factor']:.2f}** |
 | **Cost Drag** | **{metrics['cost_drag_pct']:.1f}% of gross** | **Payoff Ratio** | **{metrics['payoff_ratio']:.2f}x** |
 
-👉 **[View Full Verified Trade Ledger & Setup Attribution (TRADES.md)](TRADES.md)**
+👉 **[View Full Paper Trade Ledger & Setup Attribution (TRADES.md)](TRADES.md)**
 <!-- SCOREBOARD_END -->"""
 
     if "<!-- SCOREBOARD_START -->" in content:

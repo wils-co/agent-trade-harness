@@ -1,0 +1,6 @@
+{
+  "max_risk_per_trade_usd": 60.0,
+  "max_position_notional_usd": 5000.0,
+  "daily_loss_cap_usd": 60.0,
+  "starting_equity_usd": 1000.0
+}

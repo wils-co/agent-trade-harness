@@ -12,6 +12,9 @@ from harness.risk import RiskEngine
 from harness.agent import Agent
 from harness import notify
 
+from harness import risk as _risk  # pin synthetic $ config; never read the gitignored local one
+_risk.LOCAL_CONFIG_PATH = Path(__file__).parent / "risk_config.test.json"
+
 
 class TestTelegramNotification(unittest.TestCase):
     def setUp(self):

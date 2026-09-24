@@ -1,19 +1,19 @@
-# Verified Trade Ledger (Unitized R)
+# Paper Trade Ledger (Unitized R)
 
 > [!NOTE]
-> All performance is unitized in **R-multiples** (risk units per trade) net of modeled taker fees and funding drag. Dollar sizing, margin, and account balances are strictly omitted.
+> **Paper trades** — journaled tickets, no real capital; the harness cannot place live orders. All performance is unitized in **R-multiples** (risk units per trade) net of modeled taker fees and funding drag. Dollar sizing, margin, and account balances are strictly omitted.
 
 ## Performance Tear-Sheet
 
 ```text
 ┌─────────────────────────┬─────────────────────────┬─────────────────────────┐
-│     EDGE & EXPECTANCY   │    CAPITAL PROTECTION   │    EXECUTION EFFICIENCY │
+│    EDGE & EXPECTANCY    │    CAPITAL PROTECTION   │   EXECUTION EFFICIENCY  │
 ├─────────────────────────┼─────────────────────────┼─────────────────────────┤
-│ Net Return:      +5.38R  │ Max Drawdown:     -1.11R │ Profit Factor:     5.85 │
-│ Expectancy:   +1.35R/trd │ Recovery Factor:    4.85 │ Payoff Ratio:     1.95x │
-│ Win Rate:         75.0%  │ Max Consec Loss:      1 │ Cost Drag:        12.2% │
-│ Avg Win:         +2.16R  │ Max Consec Win:       2 │ Avg Win Hold:     20.7h │
-│ Avg Loss:        -1.11R  │ SQN Score:          1.60 │ Avg Loss Hold:     3.8h │
+│ Net Return:      +5.38R │ Max Drawdown:    -1.11R │ Profit Factor:     5.85 │
+│ Expectancy:  +1.35R/trd │ Recovery Factor:   4.85 │ Payoff Ratio:     1.95x │
+│ Win Rate:         75.0% │ Max Consec Loss:      1 │ Cost Drag:        12.2% │
+│ Avg Win:         +2.16R │ Max Consec Win:       2 │ Avg Win Hold:     20.7h │
+│ Avg Loss:        -1.11R │ SQN Score:         1.60 │ Avg Loss Hold:     3.8h │
 └─────────────────────────┴─────────────────────────┴─────────────────────────┘
 ```
 
